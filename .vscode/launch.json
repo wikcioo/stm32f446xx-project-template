@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "st-link debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceRoot}/build/artefact/__project_name__.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "stutil",
+            "device": "STM32F446RE",
+            "interface": "jtag",
+            "preLaunchTask": "build",
+            "runToEntryPoint": "main"
+        }
+    ]
+}
