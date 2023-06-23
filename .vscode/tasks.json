@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "make all -j4",
+            "group": {
+                "kind": "build",
+            }
+        },
+        {
+            "label": "clean",
+            "type": "shell",
+            "command": "make clean",
+            "group": {
+                "kind": "build",
+            }
+        },
+        {
+            "label": "flash",
+            "type": "shell",
+            "command": "make flash",
+            "group": {
+                "kind": "build",
+            }
+        }
+    ]
+}
