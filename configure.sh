@@ -19,20 +19,48 @@ for file in "${files_to_change[@]}"; do
     sed -i "s/__project_name__/${project_name}/g" "$file"
 done
 
-packages=(
-    "arm-none-eabi-gcc"
-    "arm-none-eabi-gdb"
-    "arm-none-eabi-binutils"
-    "clang" # for clang-format
-    "stlink"
-    "make"
-)
-
+packages=()
 missing=()
+package_finder=""
+package_installer=""
+
+function detect_system() {
+    if command -v pacman &>/dev/null; then
+        package_finder="pacman -Q"
+        package_installer="pacman -S"
+        packages=(
+            "arm-none-eabi-gcc"
+            "arm-none-eabi-gdb"
+            "arm-none-eabi-binutils"
+            "clang" # for clang-format
+            "stlink"
+            "make"
+        )
+    elif command -v apt &>/dev/null; then
+        package_finder="dpkg-query -W -f='\${Status}'"
+        package_installer="apt install"
+        packages=(
+            "gcc-arm-none-eabi"
+            "gdb-multiarch"
+            "binutils-arm-none-eabi"
+            "clang" # for clang-format
+            "stlink-tools"
+            "make"
+        )
+    else
+        echo "This script only supports Debian and Arch \
+based distributions for installing packages"
+        exit 1
+    fi
+}
+
+detect_system
 
 echo "Checking for required packages:"
 for pkg in "${packages[@]}"; do
-    if pacman -Q $pkg > /dev/null 2>&1; then
+    eval "$package_finder $pkg &>/dev/null"
+    return_value=$?
+    if [ $return_value -eq 0 ]; then
         echo_color "$GREEN_COLOR" "\"$pkg\" found"
     else
         echo_color "$RED_COLOR" "\"$pkg\" not found"
@@ -45,6 +73,6 @@ if [ ${#missing[@]} -ne 0 ]; then
     read -p "Do you want to install them now? (Y/n) " answer
 
     if [ "$answer" = "y" ] || [ "$answer" = "Y" ] || [ "$answer" = "" ]; then
-        eval "sudo pacman -S ${missing[@]}"
+        eval "sudo $package_installer ${missing[@]}"
     fi
 fi
