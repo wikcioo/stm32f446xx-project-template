@@ -2,7 +2,8 @@ TARGET := __project_name__
 
 TOOLCHAIN := arm-none-eabi-
 CC        := $(TOOLCHAIN)gcc
-MACH      := cortex-m4
+CPU       := cortex-m4
+FPU       := fpv4-sp-d16
 FLOAT_ABI := soft
 
 DEBUG := 1
@@ -45,7 +46,7 @@ endif
 LD_SCRIPT := $(LINKER_DIR)/stm32f446xx_flash_ram.ld
 
 C_FLAGS := \
--mcpu=$(MACH) \
+-mcpu=$(CPU) \
 -mthumb \
 -mfloat-abi=$(FLOAT_ABI) \
 -std=gnu11 \
@@ -56,11 +57,19 @@ $(OPTS)
 
 
 LD_FLAGS := \
--mcpu=$(MACH) \
+-mcpu=$(CPU) \
 -mthumb \
 -mfloat-abi=$(FLOAT_ABI) \
 -T$(LD_SCRIPT) \
--Wl,-Map=$(BUILD_DIR)/$(TARGET).map
+-Wl,-Map=$(BUILD_DIR)/$(TARGET).map \
+-u_printf_float \
+--specs=nano.specs
+
+HARD_STR := hard
+ifeq ($(FLOAT_ABI), $(HARD_STR))
+	C_FLAGS += -mfpu=$(FPU)
+	LD_FLAGS += -mfpu=$(FPU)
+endif
 
 SOURCES := $(wildcard $(USR_SRC_DIR)/*.c)
 SOURCES += $(STARTUP_DIR)/stm32f446xx_startup.c
