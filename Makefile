@@ -39,6 +39,7 @@ OPTS :=
 
 ifeq ($(DEBUG), 1)
 	OPTS += -Og -ggdb
+	C_DEFINES += -D_DEBUG
 else
 	OPTS += -O2
 endif
