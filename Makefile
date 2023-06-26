@@ -14,7 +14,7 @@ CMSIS_DIR    := thirdparty/CMSIS
 HAL_DIR      := thirdparty/STM32F4xx_HAL_Driver
 LINKER_DIR   := linker
 STARTUP_DIR  := startup
-DRIVERS_DIR  := drivers
+SYSCALLS_DIR := syscalls
 USR_INC_DIR  := core/include
 USR_SRC_DIR  := core/src
 
@@ -23,7 +23,7 @@ C_INCLUDES := \
 -I$(CMSIS_DIR)/Device/ST/STM32F4xx/Include \
 -I$(HAL_DIR)/Inc \
 -I$(HAL_DIR)/Inc/Legacy \
--I$(USR_INC_DIR)
+-I$(USR_INC_DIR) \
 
 C_DEFINES := \
 -DUSE_HAL_DRIVER \
@@ -56,7 +56,6 @@ $(C_DEFINES) \
 $(WARNINGS) \
 $(OPTS)
 
-
 LD_FLAGS := \
 -mcpu=$(CPU) \
 -mthumb \
@@ -73,7 +72,9 @@ ifeq ($(FLOAT_ABI), $(HARD_STR))
 endif
 
 SOURCES := $(wildcard $(USR_SRC_DIR)/*.c)
-SOURCES += $(STARTUP_DIR)/stm32f446xx_startup.c
+SOURCES += $(STARTUP_DIR)/stm32f446xx_startup.s
+SOURCES += $(SYSCALLS_DIR)/syscalls.c
+SOURCES += $(SYSCALLS_DIR)/sysmem.c
 SOURCES += \
 $(HAL_DIR)/Src/stm32f4xx_hal_tim.c \
 $(HAL_DIR)/Src/stm32f4xx_hal_tim_ex.c \
@@ -111,7 +112,10 @@ $(BUILD_DIR)/%.c.o: $(HAL_DIR)/Src/%.c | $(BUILD_DIR)
 $(BUILD_DIR)/%.c.o: $(USR_SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) -c $(C_FLAGS) $^ -o $@
 
-$(BUILD_DIR)/%.c.o: $(STARTUP_DIR)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.c.o: $(STARTUP_DIR)/%.s | $(BUILD_DIR)
+	$(CC) -c $(C_FLAGS) $^ -o $@
+
+$(BUILD_DIR)/%.c.o: $(SYSCALLS_DIR)/%.c | $(BUILD_DIR)
 	$(CC) -c $(C_FLAGS) $^ -o $@
 
 flash: $(ARTEFACT_DIR)
